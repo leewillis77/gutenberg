@@ -105,7 +105,7 @@ public class WPAndroidGlueCode {
     private CountDownLatch mGetContentCountDownLatch;
     private WeakReference<View> mLastFocusedView = null;
     private RequestExecutor mRequestExecutor;
-    private AddMentionUtil mAddMentionUtil;
+    private ShowSuggestionsUtil mShowSuggestionsUtil;
     private @Nullable Bundle mEditorTheme = null;
 
     private static OkHttpHeaderInterceptor sAddCookiesInterceptor = new OkHttpHeaderInterceptor();
@@ -385,8 +385,12 @@ public class WPAndroidGlueCode {
             }
 
             @Override
-            public void onAddMention(Consumer<String> onSuccess) {
-                mAddMentionUtil.getMention(onSuccess);
+            public void onShowUserSuggestions(Consumer<String> onResult) {
+                mShowSuggestionsUtil.showUserSuggestions(onResult);
+            }
+
+            @Override public void onShowXpostSuggestions(Consumer<String> onResult) {
+                mShowSuggestionsUtil.showXpostSuggestions(onResult);
             }
 
             @Override
@@ -472,7 +476,7 @@ public class WPAndroidGlueCode {
                                   OnLogGutenbergUserEventListener onLogGutenbergUserEventListener,
                                   OnGutenbergDidRequestUnsupportedBlockFallbackListener onGutenbergDidRequestUnsupportedBlockFallbackListener,
                                   OnGutenbergDidSendButtonPressedActionListener onGutenbergDidSendButtonPressedActionListener,
-                                  AddMentionUtil addMentionUtil,
+                                  ShowSuggestionsUtil showSuggestionsUtil,
                                   OnStarterPageTemplatesTooltipShownEventListener onStarterPageTemplatesTooltipListener,
                                   boolean isDarkMode) {
         MutableContextWrapper contextWrapper = (MutableContextWrapper) mReactRootView.getContext();
@@ -488,7 +492,7 @@ public class WPAndroidGlueCode {
         mOnLogGutenbergUserEventListener = onLogGutenbergUserEventListener;
         mOnGutenbergDidRequestUnsupportedBlockFallbackListener = onGutenbergDidRequestUnsupportedBlockFallbackListener;
         mOnGutenbergDidSendButtonPressedActionListener = onGutenbergDidSendButtonPressedActionListener;
-        mAddMentionUtil = addMentionUtil;
+        mShowSuggestionsUtil = showSuggestionsUtil;
         mOnStarterPageTemplatesTooltipShownListener = onStarterPageTemplatesTooltipListener;
 
         sAddCookiesInterceptor.setOnAuthHeaderRequestedListener(onAuthHeaderRequestedListener);
