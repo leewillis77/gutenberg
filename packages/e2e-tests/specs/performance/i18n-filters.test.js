@@ -106,17 +106,48 @@ page.on( 'load', function () {
 			'i18n.ngettext_with_context',
 			'i18n.ngettext_with_context_default',
 		];
+		// eslint-disable-next-line no-console
+		console.log( 'COUNTRESET' );
 		filters.forEach( ( filter ) => {
 			wp.hooks.addFilter(
 				filter,
 				'e2e-tests',
 				( ...args ) => {
+					// eslint-disable-next-line no-console
+					console.count( 'i18nFilters' );
 					return args[ 0 ];
 				},
 				90
 			);
 		} );
 	} );
+} );
+let lastFilterMsg = 'i18nFilters: 0',
+	totalFilterCount = 0;
+function trackFilterCount( msg ) {
+	lastFilterMsg = msg.text();
+}
+function dumpAndResetFilterCount() {
+	// eslint-disable-next-line no-console
+	console.log( lastFilterMsg );
+	totalFilterCount += parseInt(
+		lastFilterMsg.replace( 'i18nFilters: ', '' )
+	);
+	lastFilterMsg = 'i18nFilters: 0';
+}
+function getFilterCount() {
+	// eslint-disable-next-line no-console
+	console.log( 'Final count ' + totalFilterCount );
+	return totalFilterCount;
+}
+page.on( 'console', ( msg ) => {
+	if ( msg.type() === 'count' ) {
+		trackFilterCount( msg );
+		return;
+	}
+	if ( msg.type() === 'log' && msg.text() === 'COUNTRESET' ) {
+		dumpAndResetFilterCount();
+	}
 } );
 
 jest.setTimeout( 1000000 );
@@ -129,6 +160,7 @@ describe( 'Post Editor Performance (with i18n filters)', () => {
 			focus: [],
 			inserterOpen: [],
 			inserterHover: [],
+			filterCount: [],
 		};
 
 		const html = readFile(
@@ -276,6 +308,8 @@ describe( 'Post Editor Performance (with i18n filters)', () => {
 		traceResults = JSON.parse( readFile( traceFile ) );
 		const [ focusEvents ] = getSelectionEventDurations( traceResults );
 		results.focus = focusEvents;
+
+		results.filterCount.push( getFilterCount() );
 
 		const resultsFilename = basename( __filename, '.js' ) + '.results.json';
 
